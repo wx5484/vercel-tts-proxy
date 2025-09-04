@@ -201,7 +201,7 @@ const DEFAULT_OPTIONS = {
 };
 
 // Vercel API 处理函数
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     // 处理 CORS 预检请求
     if (req.method === 'OPTIONS') {
         setCorsHeaders(res);

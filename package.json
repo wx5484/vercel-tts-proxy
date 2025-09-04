@@ -5,7 +5,7 @@
   "main": "api/tts.js",
   "scripts": {
     "dev": "vercel dev",
-    "build": "vercel build",
+    "build": "echo 'Build completed'",
     "deploy": "vercel --prod"
   },
   "dependencies": {
