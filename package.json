@@ -1,18 +1,11 @@
 {
   "name": "vercel-tts-proxy",
   "version": "1.0.0",
-  "description": "A proxy for Microsoft Edge TTS service.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "private": true,
   "dependencies": {
     "edge-tts-node": "^1.3.1"
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   }
 }
