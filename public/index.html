@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang=\"zh-CN\">
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>Edge TTS API 测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        audio {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class=\"container\">
+        <h1>Edge TTS API 测试工具</h1>
+        
+        <form id=\"ttsForm\">
+            <div class=\"form-group\">
+                <label for=\"text\">文本内容：</label>
+                <textarea id=\"text\" placeholder=\"请输入要转换为语音的文本内容...\" required>你好，这是一个Edge TTS API测试。</textarea>
+            </div>
+            
+            <div class=\"form-group\">
+                <label for=\"voice\">语音类型：</label>
+                <select id=\"voice\">
+                    <option value=\"zh-CN-XiaoxiaoNeural\">晓晓（女声）</option>
+                    <option value=\"zh-CN-YunxiNeural\">云希（男声）</option>
+                    <option value=\"zh-CN-YunjianNeural\">云健（男声）</option>
+                    <option value=\"zh-CN-XiaoyiNeural\">晓伊（女声）</option>
+                    <option value=\"zh-CN-YunyangNeural\">云扬（男声）</option>
+                    <option value=\"en-US-JennyNeural\">Jenny（英文女声）</option>
+                    <option value=\"en-US-GuyNeural\">Guy（英文男声）</option>
+                </select>
+            </div>
+            
+            <div class=\"form-group\">
+                <label for=\"rate\">语速：</label>
+                <select id=\"rate\">
+                    <option value=\"-50%\">很慢</option>
+                    <option value=\"-25%\">慢</option>
+                    <option value=\"+0%\" selected>正常</option>
+                    <option value=\"+25%\">快</option>
+                    <option value=\"+50%\">很快</option>
+                </select>
+            </div>
+            
+            <div class=\"form-group\">
+                <label for=\"pitch\">音调：</label>
+                <select id=\"pitch\">
+                    <option value=\"-50Hz\">低</option>
+                    <option value=\"+0Hz\" selected>正常</option>
+                    <option value=\"+50Hz\">高</option>
+                </select>
+            </div>
+            
+            <div class=\"form-group\">
+                <button type=\"button\" onclick=\"generateAudio()\">生成语音</button>
+                <button type=\"button\" onclick=\"generateSubtitle()\">生成字幕</button>
+            </div>
+        </form>
+        
+        <div id=\"result\"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        
+        function showResult(message, type = 'success') {
+            const result = document.getElementById('result');
+            result.innerHTML = `<div class=\"result ${type}\">${message}</div>`;
+        }
+        
+        function getFormData() {
+            return {
+                text: document.getElementById('text').value,
+                voice: document.getElementById('voice').value,
+                rate: document.getElementById('rate').value,
+                pitch: document.getElementById('pitch').value,
+                volume: '+0%'
+            };
+        }
+        
+        async function generateAudio() {
+            const data = getFormData();
+            
+            if (!data.text.trim()) {
+                showResult('请输入文本内容', 'error');
+                return;
+            }
+            
+            showResult('正在生成语音，请稍候...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/tts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '生成失败');
+                }
+                
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                showResult(`
+                    <div>语音生成成功！</div>
+                    <audio controls>
+                        <source src=\"${audioUrl}\" type=\"audio/mpeg\">
+                        您的浏览器不支持音频播放。
+                    </audio>
+                    <br><br>
+                    <a href=\"${audioUrl}\" download=\"speech.mp3\" style=\"background: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;\">下载音频</a>
+                `);
+                
+            } catch (error) {
+                showResult(`生成语音失败：${error.message}`, 'error');
+            }
+        }
+        
+        async function generateSubtitle() {
+            const data = { ...getFormData(), type: 'subtitle' };
+            
+            if (!data.text.trim()) {
+                showResult('请输入文本内容', 'error');
+                return;
+            }
+            
+            showResult('正在生成字幕，请稍候...', 'loading');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/tts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '生成失败');
+                }
+                
+                const vttContent = await response.text();
+                const vttBlob = new Blob([vttContent], { type: 'text/vtt' });
+                const vttUrl = URL.createObjectURL(vttBlob);
+                
+                showResult(`
+                    <div>字幕生成成功！</div>
+                    <pre style=\"background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; max-height: 200px;\">${vttContent}</pre>
+                    <a href=\"${vttUrl}\" download=\"subtitle.vtt\" style=\"background: #28a745; color: white; padding: 8px 16px; text-decoration: none; border-radius: 4px;\">下载字幕</a>
+                `);
+                
+            } catch (error) {
+                showResult(`生成字幕失败：${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
