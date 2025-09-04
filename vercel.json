@@ -1,8 +1,8 @@
 {
   "builds": [
     {
-      "src": "api/hello.js",  // 路径需精确匹配（如api文件夹是小写、hello.js在api内）
-      "use": "@vercel/node"   // Vercel官方Node.js构建包
+      "src": "api/hello.js",
+      "use": "@vercel/node"
     }
   ]
 }
