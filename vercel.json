@@ -1,10 +1,14 @@
 {
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
+  "builds": [
+    {
+      "src": "/api/tts.js",
+      "use": "@vercel/node"
     }
-  },
-  "rewrites": [
-    { "source": "/api/tts", "destination": "/api/tts.js" }
+  ],
+  "routes": [
+    {
+      "src": "/api/tts",
+      "dest": "/api/tts.js"
+    }
   ]
 }
