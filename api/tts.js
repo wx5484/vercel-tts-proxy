@@ -1,6 +1,6 @@
-// api/tts.js (最终修正版)
+// api/tts.js (最终的、基于官方文档的正确版本)
 
-const { MsEdgeTTS } = require("edge-tts-node"); // <-- 修正#1：我们现在正确地取出了 MsEdgeTTS
+const { TTS, SubMaker } = require("edge-tts-node"); // 修正#1: 我们现在同时取出了音频工具(TTS)和字幕工具(SubMaker)
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -14,17 +14,27 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Text is required' });
     }
 
-    // 修正#2：我们现在使用正确的 MsEdgeTTS 来创建实例
-    const tts = new MsEdgeTTS({ voice, pitch, rate, volume, outputFormat: "audio-24khz-48kbitrate-mono-mp3" });
+    // 准备好两个工具共用的配置
+    const options = { voice, pitch, rate, volume, outputFormat: "audio-24khz-48kbitrate-mono-mp3" };
+
+    // 修正#2: 分别创建音频工具和字幕工具的实例
+    const tts = new TTS(options);
+    const subMaker = new SubMaker(options);
+
+    // 修正#3: 让两个工具并行工作，以提高效率
+    const [audioBuffer, subtitles] = await Promise.all([
+      // 任务一：获取音频数据流并转换为Buffer
+      (async () => {
+        const audioStream = tts.getStream(text);
+        const chunks = [];
+        for await (const chunk of audioStream) { chunks.push(chunk); }
+        return Buffer.concat(chunks);
+      })(),
+      // 任务二：使用字幕工具获取字幕
+      subMaker.getSubtitles(text)
+    ]);
     
-    const subtitles = await tts.getSubtitles(text);
-    
-    const audioStream = tts.getStream(text);
-    const chunks = [];
-    for await (const chunk of audioStream) { chunks.push(chunk); }
-    const audioBuffer = Buffer.concat(chunks);
     const audioBase64 = audioBuffer.toString('base64');
-    
     const srtContent = vttToSrt(subtitles);
 
     res.status(200).json({ success: true, audio_base_64: audioBase64, srt_string: srtContent });
