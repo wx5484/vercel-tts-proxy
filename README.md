@@ -144,16 +144,6 @@ MIT License
 2. 输出目录设置为：`public`
 3. 或者使用自动检测（推荐）
 
-### Q: 本地开发环境搭建
-**A:** 
-```bash
-# 克隆项目
-git clone <repository-url>
-cd vercel-tts-proxy
 
-# 安装依赖
-npm install
 
-# 启动本地开发服务器
-npm run dev
 ```
