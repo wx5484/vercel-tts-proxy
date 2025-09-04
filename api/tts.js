@@ -1,4 +1,6 @@
-const { TTS } = require("edge-tts-node");
+// api/tts.js (已修正版本)
+
+const TTS = require("edge-tts-node"); // <-- 唯一的修改在这里
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -7,10 +9,12 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const { text, voice = 'zh-CN-XiaochenNeural' } = req.body;
-    if (!text) { return res.status(400).json({ message: 'Text is required' }); }
-    
-    const tts = new TTS({ voice, outputFormat: "audio-24khz-48kbitrate-mono-mp3" });
+    const { text, voice = 'zh-CN-XiaochenNeural', rate = '+0%', pitch = '+0Hz', volume = '100%' } = req.body;
+    if (!text) {
+      return res.status(400).json({ success: false, message: 'Text is required' });
+    }
+
+    const tts = new TTS({ voice, pitch, rate, volume, outputFormat: "audio-24khz-48kbitrate-mono-mp3" });
     const subtitles = await tts.getSubtitles(text);
     
     const audioStream = tts.getStream(text);
@@ -21,11 +25,11 @@ module.exports = async (req, res) => {
     
     const srtContent = vttToSrt(subtitles);
 
-    res.status(200).json({ audio_base_64: audioBase64, srt_string: srtContent });
-    
+    res.status(200).json({ success: true, audio_base_64: audioBase64, srt_string: srtContent });
+
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Failed to generate audio.' });
+    res.status(500).json({ success: false, message: 'Failed to generate TTS audio.', error: error.message });
   }
 };
 
