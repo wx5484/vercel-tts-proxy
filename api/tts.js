@@ -1,6 +1,6 @@
 // api/tts.js
 
-const { TTS, V odstranění } = require("edge-tts-node");
+const { TTS } = require("edge-tts-node");
 
 // 这是Vercel处理Serverless函数的标准方式
 module.exports = async (req, res) => {
