@@ -259,11 +259,13 @@ async function getTTSEndpoint() {
     const clientId = randomUUID().replace(/-/g, '');
     
     const headers = {
-        'Accept-Language': 'zh-Hans',
+        'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
         'X-ClientTraceId': clientId,
         'X-MT-Signature': signature,
-        'User-Agent': 'okhttp/4.5.0',
-        'Content-Type': 'application/json; charset=utf-8'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59',
+        'Content-Type': 'application/json; charset=utf-8',
+        'Origin': 'https://azure.microsoft.com',
+        'Referer': 'https://azure.microsoft.com/'
     };
 
     const response = await fetch(endpointUrl, {
@@ -272,7 +274,14 @@ async function getTTSEndpoint() {
     });
 
     if (!response.ok) {
-        throw new Error(`获取TTS Endpoint失败，状态码 ${response.status}`);
+        const errorText = await response.text();
+        console.error('TTS Endpoint错误:', {
+            status: response.status,
+            statusText: response.statusText,
+            error: errorText,
+            headers: Object.fromEntries(response.headers.entries())
+        });
+        throw new Error(`获取TTS Endpoint失败，状态码 ${response.status}: ${errorText}`);
     }
 
     return { endpoint: await response.json(), signature };
