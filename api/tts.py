@@ -119,10 +119,20 @@ async def generate_tts_with_subtitles(text: str, voice: str, rate: int, pitch: i
     """
     使用edge-tts生成音频和精确字幕
     """
+    # 确保参数类型正确 - 修复格式化错误
+    try:
+        rate_int = int(rate) if rate is not None else 0
+        pitch_int = int(pitch) if pitch is not None else 0
+        volume_int = int(volume) if volume is not None else 50
+    except (ValueError, TypeError):
+        rate_int = 0
+        pitch_int = 0
+        volume_int = 50
+
     # 构建SSML参数
-    rate_str = f"{rate:+d}%" if rate != 0 else "+0%"
-    pitch_str = f"{pitch:+d}Hz" if pitch != 0 else "+0Hz"
-    volume_str = f"{volume}%"
+    rate_str = f"{rate_int:+d}%" if rate_int != 0 else "+0%"
+    pitch_str = f"{pitch_int:+d}Hz" if pitch_int != 0 else "+0Hz"
+    volume_str = f"{volume_int}%"
 
     # 创建临时文件
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as audio_file:
