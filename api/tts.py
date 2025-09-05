@@ -109,7 +109,7 @@ async def generate_tts_with_subtitles(text: str, voice: str, rate: int, pitch: i
     # 构建SSML参数
     rate_str = f"{rate:+d}%" if rate != 0 else "+0%"
     pitch_str = f"{pitch:+d}Hz" if pitch != 0 else "+0Hz"
-    volume_str = f"{volume}%"
+    volume_str = f"{volume:+d}%"
 
     # 创建临时文件
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as audio_file:
@@ -269,4 +269,5 @@ class handler(BaseHTTPRequestHandler):
             "method": "POST /api/tts",
             "params": ["text", "voice", "rate", "pitch", "volume"]
         }
+
         self.wfile.write(json.dumps(info, ensure_ascii=False).encode('utf-8'))
