@@ -6,7 +6,6 @@ Python TTS代理服务 - 基于edge-tts库
 1. 直接使用成熟的edge-tts Python库
 2. 支持精确的字幕时间戳
 3. 不需要处理复杂的WebSocket连接
-4. 库维护活跃，稳定可靠
 """
 
 import asyncio
@@ -293,3 +292,4 @@ class handler(BaseHTTPRequestHandler):
             "params": ["text", "voice", "rate", "pitch", "volume"]
         }
         self.wfile.write(json.dumps(info, ensure_ascii=False).encode('utf-8'))
+
