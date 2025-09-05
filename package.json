@@ -5,7 +5,7 @@
   "description": "Vercel代理服务用于Edge TTS",
   "main": "api/tts.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "dependencies": {
     "ws": "^8.18.0"

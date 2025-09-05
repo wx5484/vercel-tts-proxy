@@ -1,12 +1,10 @@
-// Vercel Edge TTS API代理服务 - 完全重构版本
+// Vercel Edge TTS API代理服务 - 简化版本
 // 解决ES模块兼容性问题
 
 import { WebSocket } from 'ws';
 import { createHmac, randomUUID } from 'crypto';
 
-// ==============================================================================
 // Vercel Serverless Function 主入口
-// ==============================================================================
 export default async function handler(req, res) {
     // 处理 CORS 预检请求
     if (req.method === 'OPTIONS') {
@@ -32,13 +30,13 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, message: '请提供要转换的文本' });
         }
 
-        console.log('开始处理TTS请求:', { textLength: text.length, voice, rate, pitch, volume });
+        console.log('TTS请求:', { textLength: text.length, voice });
         
-        // 1. 文本预处理：智能分块
+        // 文本预处理
         const textChunks = preprocessText(text);
-        console.log(`文本被分为 ${textChunks.length} 个块`);
+        console.log(`文本分为 ${textChunks.length} 个块`);
 
-        // 2. 获取TTS服务端点信息
+        // 获取TTS服务端点
         const { endpoint } = await getTTSEndpoint();
         const trustedToken = endpoint.t;
 
@@ -46,7 +44,7 @@ export default async function handler(req, res) {
         let allWordBoundaries = [];
         let totalAudioDurationNs = 0;
 
-        // 3. 处理每个文本块
+        // 处理每个文本块
         for (let i = 0; i < textChunks.length; i++) {
             const chunk = textChunks[i];
             console.log(`处理第 ${i + 1}/${textChunks.length} 个文本块`);
@@ -79,7 +77,7 @@ export default async function handler(req, res) {
             }
         }
 
-        // 4. 合并结果
+        // 合并结果
         const finalAudioBuffer = Buffer.concat(allAudioChunks);
         const audioBase64 = finalAudioBuffer.toString('base64');
         const srtContent = generateAccurateSRT(allWordBoundaries);
@@ -87,7 +85,6 @@ export default async function handler(req, res) {
 
         console.log('TTS处理完成:', { audioSize: finalAudioBuffer.length, duration: actualDuration });
 
-        // 5. 返回结果
         return res.status(200).json({
             success: true,
             audio_base64: audioBase64,
@@ -102,8 +99,7 @@ export default async function handler(req, res) {
         console.error('Vercel TTS处理错误:', error);
         return res.status(500).json({ 
             success: false, 
-            message: `语音合成失败: ${error.message}`,
-            error: error.stack
+            message: `语音合成失败: ${error.message}`
         });
     }
 }
@@ -161,7 +157,7 @@ function getAudioAndSubtitlesFromWebSocket(url, signature, clientId, ssml) {
                 ws.close();
                 reject(new Error('WebSocket操作超时'));
             }
-        }, 300000);
+        }, 30000);
 
         ws.on('open', () => {
             console.log('WebSocket连接已建立');
