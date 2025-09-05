@@ -1,149 +1,173 @@
-# Edge TTS API Proxy
+# Vercel TTS 代理服务
 
-基于 Vercel 平台的 Microsoft Edge TTS API 代理服务。
+这是一个部署在 Vercel 平台上的 Edge TTS API 代理服务，专门为解决 Cloudflare Worker 中 WebSocket 连接限制而设计。
 
-## 功能特性
+## 🚀 功能特性
 
-- 🎤 支持多种语音合成
-- 📝 自动生成字幕文件（VTT格式）
-- 🌐 跨域支持（CORS）
-- ⚡ 基于 Vercel 的快速部署
-- 🔧 可自定义语音参数
+- ✅ 完全兼容 ES 模块（解决 `ERR_REQUIRE_ESM` 错误）
+- ✅ 支持文本智能分块处理
+- ✅ 生成高质量音频和精确字幕
+- ✅ 完整的 CORS 支持
+- ✅ 30秒超时保护
+- ✅ 错误处理和日志记录
 
-## 部署到 Vercel
+## 📦 部署方式
 
-### 方式一：通过 Vercel 网站部署
-1. Fork 或下载此仓库
-2. 在 [Vercel](https://vercel.com) 中导入项目
-3. 设置构建命令为：`echo 'Build completed'`
-4. 设置输出目录为：`public`
-5. 部署完成后访问根域名（例如：https://your-app.vercel.app）
-
-### 方式二：使用 Vercel CLI
-```bash
-npm install -g vercel
-vercel login
-vercel --prod
-```
-
-### 方式三：使用部署脚本
-```bash
-chmod +x deploy.sh
-./deploy.sh
-```
-
-## API 使用方法
-
-### 生成语音
+### 方式一：Vercel CLI 部署
 
 ```bash
-curl -X POST https://your-app.vercel.app/api/tts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "你好，这是一个测试",
-    "voice": "zh-CN-XiaoxiaoNeural",
-    "pitch": "+0Hz",
-    "rate": "+0%",
-    "volume": "+0%"
-  }' \
-  --output speech.mp3
+# 1. 安装依赖
+npm install
+
+# 2. 部署到 Vercel
+npx vercel --prod
 ```
 
-### 生成字幕
+### 方式二：Git 连接部署
 
-```bash
-curl -X POST https://your-app.vercel.app/api/tts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "text": "你好，这是一个测试",
-    "voice": "zh-CN-XiaoxiaoNeural",
-    "type": "subtitle"
-  }' \
-  --output subtitle.vtt
+1. 将代码推送到 GitHub 仓库
+2. 在 Vercel 控制台连接 GitHub 仓库
+3. Vercel 会自动部署
+
+### 方式三：拖拽部署
+
+1. 压缩整个项目文件夹
+2. 在 Vercel 控制台直接拖拽上传
+
+## 🔧 配置说明
+
+### 项目结构
+```
+vercel-tts-proxy/
+├── api/
+│   └── tts.js          # 主要的 TTS API 端点
+├── public/
+│   └── index.html      # 测试页面
+├── package.json        # 依赖配置
+├── vercel.json         # Vercel 配置
+└── README.md          # 说明文档
 ```
 
-## 请求参数
+### 重要配置
 
-| 参数 | 类型 | 必需 | 默认值 | 说明 |
-|------|------|------|--------|------|
-| `text` | string | 是 | - | 要转换的文本内容（最大5000字符） |
-| `voice` | string | 否 | zh-CN-XiaoxiaoNeural | 语音类型 |
-| `pitch` | string | 否 | +0Hz | 音调调节 |
-| `rate` | string | 否 | +0% | 语速调节 |
-| `volume` | string | 否 | +0% | 音量调节 |
-| `type` | string | 否 | audio | 输出类型：audio（音频）或 subtitle（字幕） |
-| `outputFormat` | string | 否 | audio-24khz-48kbitrate-mono-mp3 | 音频输出格式 |
-
-## 支持的语音
-
-常用中文语音：
-- `zh-CN-XiaoxiaoNeural` - 晓晓（女声）
-- `zh-CN-YunxiNeural` - 云希（男声）
-- `zh-CN-YunjianNeural` - 云健（男声）
-- `zh-CN-XiaoyiNeural` - 晓伊（女声）
-- `zh-CN-YunyangNeural` - 云扬（男声）
-
-更多语音类型请参考微软官方文档。
-
-## 响应格式
-
-### 成功响应
-- 音频请求：返回 MP3 音频文件
-- 字幕请求：返回 VTT 字幕文件
-
-### 错误响应
+**package.json 关键配置：**
 ```json
 {
-  "error": "错误类型",
-  "message": "错误详情",
-  "timestamp": "2024-01-01T00:00:00.000Z"
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  }
 }
 ```
 
-## 限制说明
-
-- 单次请求文本长度限制：5000 字符
-- 请求超时时间：30 秒
-- 支持的方法：POST
-- 需要正确的 Content-Type: application/json
-
-## 本地开发
-
-```bash
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-
-# 部署到生产环境
-npm run deploy
+**vercel.json 配置：**
+```json
+{
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
+}
 ```
 
-## 许可证
+## 📡 API 接口
 
-MIT License
+### POST /api/tts
 
-## 常见问题
+文本转语音接口
 
-### Q: 访问网站时显示 404 错误
-**A:** 请确保访问的是根域名，而不是 `/public/index.html` 路径。正确的访问地址应该是：
-- ✅ 正确：`https://your-app.vercel.app/`
-- ❌ 错误：`https://your-app.vercel.app/public/index.html`
-
-### Q: API 调用失败
-**A:** 请检查：
-1. 请求方法是否为 POST
-2. Content-Type 是否设置为 `application/json`
-3. 请求体格式是否正确
-4. 文本内容是否超过 5000 字符
-
-### Q: 部署后无法访问
-**A:** 请检查 Vercel 项目设置：
-1. 构建命令设置为：`echo 'Build completed'`
-2. 输出目录设置为：`public`
-3. 或者使用自动检测（推荐）
-
-
-
+**请求体：**
+```json
+{
+  "text": "要转换的文本",
+  "voice": "zh-CN-XiaochenNeural",
+  "rate": 0,
+  "pitch": 0,
+  "volume": 50
+}
 ```
+
+**响应：**
+```json
+{
+  "success": true,
+  "audio_base64": "base64编码的音频数据",
+  "srt_string": "SRT格式字幕",
+  "message": "语音生成成功",
+  "voice": "zh-CN-XiaochenNeural",
+  "rate": 0,
+  "pitch": 0,
+  "volume": 50,
+  "duration": 5.234,
+  "chunks": 2
+}
+```
+
+## 🔗 与 Cloudflare Worker 集成
+
+在你的 Cloudflare Worker 中使用这个代理：
+
+```javascript
+const VERCEL_PROXY_URL = "https://your-vercel-app.vercel.app/api/tts";
+
+router.post('/api/edge-tts', async (request, env) => {
+  // 1. 身份验证
+  const authResult = requireAuth(request, env);
+  if (!authResult.success) {
+    return errorResponse(authResult.message, 401);
+  }
+
+  // 2. 获取请求参数
+  const payload = await request.json();
+
+  // 3. 转发到 Vercel 代理
+  const proxyResponse = await fetch(VERCEL_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  // 4. 返回结果
+  const result = await proxyResponse.json();
+  return jsonResponse(result);
+});
+```
+
+## 🐛 问题解决
+
+### 常见错误及解决方案
+
+1. **ERR_REQUIRE_ESM 错误**
+   - ✅ 已解决：使用 ES 模块语法和正确的 package.json 配置
+
+2. **WebSocket 连接失败**
+   - 检查网络连接
+   - 确保使用正确的签名和令牌
+
+3. **超时错误**
+   - 文本会自动分块处理
+   - 每个块有30秒超时保护
+
+## 📝 更新日志
+
+### v1.0.0 (2025-09-05)
+- ✅ 完全重构，解决 ES 模块兼容性问题
+- ✅ 优化文本分块算法
+- ✅ 改进错误处理和日志记录
+- ✅ 添加完整的测试页面
+
+## 📞 技术支持
+
+如果遇到问题，请检查：
+1. Node.js 版本 >= 18
+2. package.json 中的 "type": "module" 配置
+3. vercel.json 中的函数超时配置
+4. API 请求格式是否正确
+
+## 🔒 安全说明
+
+- 本服务使用微软官方的 Edge TTS API
+- 所有请求都通过 HTTPS 加密
+- 不存储任何用户数据
+- 建议在生产环境中添加适当的访问控制

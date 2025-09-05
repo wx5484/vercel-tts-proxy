@@ -1,6 +1,13 @@
 {
+  "name": "vercel-tts-proxy",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Vercel代理服务用于Edge TTS",
+  "main": "api/tts.js",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
-    "node-fetch": "^3.3.2",
-    "ws": "^8.18.3"
+    "ws": "^8.18.0"
   }
 }
